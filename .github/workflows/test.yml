@@ -29,4 +29,4 @@ jobs:
 
       - name: Run Docker image container
         run: |
-          docker run -d -rm -p 1000:8080 aizathizami/uemrefresherapp:testing
+          docker run -d --rm -p 1000:8080 aizathizami/uemrefresherapp:testing
