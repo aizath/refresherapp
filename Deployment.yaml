@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: aspnetapp   # Giving a name for the container being deployed 
-        image: jlimhy/aspnetapp:latest   # Select docker image you have on your machine
+        image: aizathizami/uemrefresherapp:testing   # Select docker image you have on your machine
         ports:
         - containerPort: 8080  
 ---
