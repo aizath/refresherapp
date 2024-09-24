@@ -27,6 +27,6 @@ jobs:
         run: |
           docker push aizathizami/uemrefresherapp:testing
 
-      - name: Run Docker image container
+      - name: Apply Kubernetes manifests
         run: |
-          docker run -d -rm -p 1000:8080 aizathizami/uemrefresherapp:testing
+          kubectl apply -f .Deployment.yaml
