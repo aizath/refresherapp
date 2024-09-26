@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Retrieve Secrets from Vault
 
 on:
   push:
@@ -6,13 +6,32 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted
+  retrieve-secrets:
+    runs-on: self-hosted  # Use your self-hosted runner
 
     steps:
+      # Step 1: Checkout the code (optional if you don't need the repository files)
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Retrieve Docker credentials from Vault
+      - name: Retrieve Docker Credentials
+        id: vault-secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: http://localhost:8200  # Replace with your Vault URL if different
+          method: approle
+          roleId: 7702e47a-725a-da68-834b-30a4299c73d2  # Your Vault Role ID
+          secretId: a4e01a3f-32a0-b9e9-da8f-35b87c21b227  # Your Vault Secret ID
+          secrets: |
+            secret/docker-credentials docker-username | DOCKER_USERNAME ;
+            secret/docker-credentials docker-password | DOCKER_PASSWORD
+
+      - name: echo
+        run: |
+          echo ${{ steps.vault-secrets.outputs.DOCKER_USERNAME }}
+          echo ${{ steps.vault-secrets.outputs.DOCKER_PASSWORD }}
+            
       - name: Build Docker image
         run: |
           docker build -t aizathizami/uemrefresherapp:testing .
@@ -20,8 +39,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ steps.vault-secrets.outputs.DOCKER_USERNAME }}
+          password: ${{ steps.vault-secrets.outputs.DOCKER_PASSWORD }}
 
       - name: Push Docker image
         run: |
@@ -29,4 +48,4 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f .Deployment.yaml
+          kubectl apply -f ./Deployment.yaml
